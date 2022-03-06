@@ -1,18 +1,14 @@
+from tracemalloc import start
 import scrapy
 from scrapy_splash import SplashRequest
-import scrapy_splash
 
 
-class ZillowSpider(scrapy.Spider):
-    name = "zillow"
-    allowed_domains = ["zillow.com"]
+class QuotesSpider(scrapy.Spider):
+    name = "quotes"
+    allowed_domains = ["quotes.toscrape.com"]
 
     def start_requests(self):
-        urls = [
-            
-            # "https://docs.scrapy.org/en/1.2/intro/tutorial.html",
-            "https://www.zillow.com/homes/for_rent/",
-        ]
+        urls = ["http://quotes.toscrape.com/"]
         for url in urls:
             # This is a Scrapy [SplashRequest](https://github.com/scrapy-plugins/scrapy-splash)
             yield SplashRequest(
@@ -24,20 +20,23 @@ class ZillowSpider(scrapy.Spider):
                     # 'url' is prefilled from request url
                     # 'http_method' is set to 'POST' for POST requests
                     # 'body' is set to request body for POST requests
-
                 },
             )
-        
 
     def parse(self, response):
-        for rental in response.xpath('//*[@id="grid-search-results"]/ul'):
+
+        for quote in response.css('div.col-md-8'):
             yield {
-                'price': rental.css("div.list-card-price::text").extract(),
-                'details': rental.css('div.list-card-details::text').extract(),
-                'address': rental.css('div.list-card-addr::text').extract(),
+                'author': quote.css('small.author::text').get(),
+                'quote': quote.css('span.text::text').get(),
             }
         
-       
-
-    
-    
+        
+        # page = response.url.split("/")[-2]
+        # filename = f"quotes-{page}.html"
+        # with open(filename, "wb") as f:
+        #     f.write(response.body)
+        # self.log(f"Saved file {filename}")
+        # Save the scraped data to a file
+        # with open('zillow.json', 'w') as f:
+        #     f.write(response.body)
